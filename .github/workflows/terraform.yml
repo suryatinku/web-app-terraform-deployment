@@ -1,0 +1,37 @@
+name: Terraform Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      TF_VAR_aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      TF_VAR_aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      TF_VAR_aws_region: "us-east-1"  # Replace with your preferred AWS region
+      TF_VAR_web_app_image: "your-web-app-image:latest"
+      TF_VAR_worker_image: "your-worker-image:latest"
+      TF_VAR_db_password: "your_db_password"
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 0.14.9
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+
+    - name: Terraform Destroy (Cleanup)
+      if: always()
+      run: terraform destroy -auto-approve
